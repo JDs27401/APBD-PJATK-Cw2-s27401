@@ -236,7 +236,7 @@ public sealed class ZadaniaLinq
             .Join(DaneUczelni.Przedmioty,
                 studentPrzedmiot => studentPrzedmiot.PrzedmiotId,
                 przedmiot => przedmiot.Id,
-                (studentPrzedmiot, przedmiot) => new {Imie = studentPrzedmiot.Imie, Nazwisko = studentPrzedmiot.Nazwisko, Nazwa_przedmiot = przedmiot.Nazwa});
+                (studentPrzedmiot, przedmiot) => new {Imie = studentPrzedmiot.Imie, Nazwisko = studentPrzedmiot.Nazwisko, Nazwa_przedmiot = przedmiot.Nazwa}.ToString());
         //todo użyć SelectMany
         return v;
         // throw Niezaimplementowano(nameof(Zadanie12_ParyStudentPrzedmiot));
@@ -255,10 +255,13 @@ public sealed class ZadaniaLinq
     public IEnumerable<string> Zadanie13_GrupowanieZapisowWedlugPrzedmiotu()
     {
         var v = DaneUczelni.Zapisy.Join(
-            DaneUczelni.Przedmioty,
-            zapis => zapis.Id,
-            przedmiot => przedmiot.Id,
-            (zapis, przedmiot) => new { Nazwa = przedmiot.Nazwa, ZapisId = zapis.Id }); //todo: dokończyć
+                DaneUczelni.Przedmioty,
+                zapis => zapis.PrzedmiotId,
+                przedmiot => przedmiot.Id,
+                (zapis, przedmiot) => new { Nazwa = przedmiot.Nazwa })
+            .GroupBy(przedmiot => przedmiot.Nazwa)
+            .Select(e => new {e.Key, e.Key.Length}.ToString());
+        return v;
         // throw Niezaimplementowano(nameof(Zadanie13_GrupowanieZapisowWedlugPrzedmiotu));
     }
 
@@ -276,7 +279,16 @@ public sealed class ZadaniaLinq
     /// </summary>
     public IEnumerable<string> Zadanie14_SredniaOcenaNaPrzedmiot()
     {
-        throw Niezaimplementowano(nameof(Zadanie14_SredniaOcenaNaPrzedmiot));
+        var v = DaneUczelni.Zapisy.Join(
+                DaneUczelni.Przedmioty,
+                zapis => zapis.PrzedmiotId,
+                przedmiot => przedmiot.Id,
+                (zapis, przedmiot) => new { zapis.OcenaKoncowa, przedmiot.Nazwa })
+            .Where(e => e.OcenaKoncowa.HasValue)
+            .GroupBy(zapis => zapis.Nazwa)
+            .Select(g => $"{g.Key} {g.Average(x => x.OcenaKoncowa)}");
+        return v;
+        // throw Niezaimplementowano(nameof(Zadanie14_SredniaOcenaNaPrzedmiot));
     }
 
     /// <summary>
